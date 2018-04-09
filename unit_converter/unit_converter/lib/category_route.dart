@@ -27,6 +27,8 @@ class CategoryRoute extends StatefulWidget {
 }
 
 class _CategoryRouteState extends State<CategoryRoute> {
+  Category _defaultCategory;
+  Category _currentCategory;
   final _categories = <Category>[];
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
@@ -63,7 +65,6 @@ class _CategoryRouteState extends State<CategoryRoute> {
       'error': Color(0xFF912D2D),
     }),
   ];
-
   static const _icons = <String>[
     'assets/icons/length.png',
     'assets/icons/area.png',
@@ -74,9 +75,6 @@ class _CategoryRouteState extends State<CategoryRoute> {
     'assets/icons/power.png',
     'assets/icons/currency.png',
   ];
-
-  var _defaultCategory;
-  var _currentCategory;
 
   @override
   Future<Null> didChangeDependencies() async {
@@ -102,16 +100,16 @@ class _CategoryRouteState extends State<CategoryRoute> {
   Future<Null> _retrieveLocalCategories() async {
     // Consider omitting the types for local variables. For more details on Effective
     // Dart Usage, see https://www.dartlang.org/guides/language/effective-dart/usage
+
     final json = DefaultAssetBundle
         .of(context)
         .loadString('assets/data/regular_units.json');
-    final decoder = JsonDecoder();
-    final data = decoder.convert(await json);
+    final data = JsonDecoder().convert(await json);
+    if (data is! Map) {
+      throw ('Data retrieved from API is not a Map');
+    }
     var categoryIndex = 0;
-    for (var key in data.keys) {
-      if (data is! Map) {
-        throw ('Data retrieved from API is not a Map');
-      }
+    (data as Map).keys.forEach((key) {
       final List<Unit> units =
           data[key].map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
 
@@ -128,7 +126,7 @@ class _CategoryRouteState extends State<CategoryRoute> {
         _categories.add(category);
       });
       categoryIndex += 1;
-    }
+    });
   }
 
   /// Retrieves a [Category] and its [Unit]s from an API on the web
